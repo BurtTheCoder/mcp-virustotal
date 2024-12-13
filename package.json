@@ -1,5 +1,5 @@
 {
-  "name": "@burthecoder/mcp-virustotal",
+  "name": "@burtthecoder/mcp-virustotal",
   "version": "1.0.0",
   "description": "MCP server for VirusTotal API integration",
   "type": "module",

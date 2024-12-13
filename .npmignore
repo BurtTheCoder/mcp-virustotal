@@ -1,0 +1,31 @@
+# Source
+src/
+
+# Development configs
+tsconfig.json
+.gitignore
+.env*
+.vscode/
+
+# Logs
+*.log
+server.log
+
+# Tests
+test/
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Development files
+.editorconfig
+.eslintrc*
+.prettierrc*
+.github/
+docs/
+
+# Dependencies
+node_modules/
+
+# Don't ignore
+!build/

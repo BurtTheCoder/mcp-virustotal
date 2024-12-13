@@ -1,6 +1,6 @@
 {
   "name": "@burtthecoder/mcp-virustotal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for VirusTotal API integration",
   "type": "module",
   "main": "build/index.js",
@@ -9,7 +9,11 @@
     "start": "node build/index.js",
     "dev": "tsc -w"
   },
-  "keywords": ["mcp", "virustotal", "security"],
+  "keywords": [
+    "mcp",
+    "virustotal",
+    "security"
+  ],
   "author": "BurtTheCoder",
   "license": "MIT",
   "publishConfig": {

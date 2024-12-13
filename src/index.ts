@@ -17,6 +17,14 @@ dotenv.config();
 
 const logFilePath = path.join(os.tmpdir(), "mcp-virustotal-server.log");
 const API_KEY = process.env.VIRUSTOTAL_API_KEY;
+
+// Debug logging for API key
+logToFile(`API Key status: ${API_KEY ? 'Present' : 'Missing'}`);
+if (API_KEY) {
+  logToFile(`API Key length: ${API_KEY.length}`);
+  logToFile(`API Key preview: ${API_KEY.substring(0, 4)}...${API_KEY.substring(API_KEY.length - 4)}`);
+}
+
 if (!API_KEY) {
   throw new Error("VIRUSTOTAL_API_KEY environment variable is required");
 }
@@ -111,6 +119,13 @@ interface VirusTotalErrorResponse {
 // Helper Function to Query VirusTotal API
 async function queryVirusTotal(axiosInstance: AxiosInstance, endpoint: string, method: 'get' | 'post' = 'get', data?: any) {
   try {
+    // Log request details (excluding full API key)
+    logToFile(`Making ${method.toUpperCase()} request to: ${endpoint}`);
+    logToFile(`Request headers: ${JSON.stringify({
+      ...axiosInstance.defaults.headers,
+      'x-apikey': '[REDACTED]'
+    }, null, 2)}`);
+    
     const response = method === 'get' 
       ? await axiosInstance.get(endpoint)
       : await axiosInstance.post(endpoint, data);
@@ -118,6 +133,12 @@ async function queryVirusTotal(axiosInstance: AxiosInstance, endpoint: string, m
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<VirusTotalErrorResponse>;
+      // Log error details
+      logToFile(`API Error: ${JSON.stringify({
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data
+      }, null, 2)}`);
       throw new Error(`VirusTotal API error: ${
         axiosError.response?.data?.error?.message || axiosError.message
       }`);

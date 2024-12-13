@@ -4,10 +4,15 @@
   "description": "MCP server for VirusTotal API integration",
   "type": "module",
   "main": "build/index.js",
+  "bin": {
+    "mcp-virustotal": "build/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "version": "npm version patch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": ["mcp", "virustotal", "security"],
   "author": "BurtTheCoder",

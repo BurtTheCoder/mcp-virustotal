@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,12 +24,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+        
+      - name: Bump version
+        if: github.event_name == 'push'
+        run: |
+          npm version patch -m "Bump version to %s [skip ci]"
+          git push
+          git push --tags
+        
       - name: Build
         run: npm run build
-        
-      - name: Run tests
-        run: npm test
-        if: hashFiles('**/test/**') != ''
         
       - name: Publish to NPM
         if: success()

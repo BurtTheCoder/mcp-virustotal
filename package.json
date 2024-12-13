@@ -1,5 +1,5 @@
 {
-  "name": "mcp-virustotal",
+  "name": "@burthecoder/mcp-virustotal",
   "version": "1.0.0",
   "description": "MCP server for VirusTotal API integration",
   "type": "module",
@@ -12,6 +12,9 @@
   "keywords": ["mcp", "virustotal", "security"],
   "author": "BurtTheCoder",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BurtTheCoder/mcp-virustotal.git"

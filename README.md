@@ -2,6 +2,60 @@
 
 A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides tools for scanning URLs, analyzing file hashes, and retrieving IP address reports. It is designed to integrate seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
 
+## Quick Start (Recommended)
+
+1. Install the server globally via npm:
+```bash
+npm install -g @burtthecoder/mcp-virustotal
+```
+
+2. Add to your Claude Desktop configuration file:
+```json
+{
+  "mcpServers": {
+    "virustotal": {
+      "command": "mcp-virustotal",
+      "env": {
+        "VIRUSTOTAL_API_KEY": "your-virustotal-api-key"
+      }
+    }
+  }
+}
+```
+
+Configuration file location:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+3. Restart Claude Desktop
+
+## Alternative Setup (From Source)
+
+If you prefer to run from source or need to modify the code:
+
+1. Clone and build:
+```bash
+git clone <repository_url>
+cd mcp-virustotal
+npm install
+npm run build
+```
+
+2. Add to your Claude Desktop configuration:
+```json
+{
+  "mcpServers": {
+    "virustotal": {
+      "command": "node",
+      "args": ["--experimental-modules", "/absolute/path/to/mcp-virustotal/build/index.js"],
+      "env": {
+        "VIRUSTOTAL_API_KEY": "your-virustotal-api-key"
+      }
+    }
+  }
+}
+```
+
 ## Features
 
 - **URL Scanning**: Submit and analyze URLs for potential security threats
@@ -64,79 +118,27 @@ A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://
 - Node.js (v18 or later)
 - A valid [VirusTotal API Key](https://www.virustotal.com/gui/my-apikey)
 
-## Setup Guide
+## Troubleshooting
 
-### 1. Installation
+### API Key Issues
 
-```bash
-git clone <repository_url>
-cd mcp-virustotal
-npm install
-```
+If you see "Wrong API key" errors:
 
-### 2. Configuration
+1. Check the log file at `/tmp/mcp-virustotal-server.log` (on macOS) for API key status
+2. Verify your API key:
+   - Should be a valid VirusTotal API key (usually 64 characters)
+   - No extra spaces or quotes around the key
+   - Must be from the API Keys section in your VirusTotal account
+3. After any configuration changes:
+   - Save the config file
+   - Restart Claude Desktop
+   - Check logs for new API key status
 
-Create a `.env` file in the root directory:
-```
-VIRUSTOTAL_API_KEY=your_virustotal_api_key
-```
+### Module Loading Issues
 
-### 3. Build and Run
-
-```bash
-npm run build
-npm start
-```
-
-### 4. Configure Claude Desktop
-
-There are two ways to configure the VirusTotal MCP server in Claude Desktop:
-
-#### Option 1: Direct Node Execution (Local Development)
-```json
-{
-  "mcpServers": {
-    "virustotal": {
-      "command": "node",
-      "args": ["path/to/mcp-virustotal/build/index.js"],
-      "env": {
-        "VIRUSTOTAL_API_KEY": "your_virustotal_api_key"
-      }
-    }
-  }
-}
-```
-
-#### Option 2: NPX Installation (Recommended for Users)
-```json
-{
-  "mcpServers": {
-    "virustotal": {
-      "command": "npm",
-      "args": ["exec", "@burtthecoder/mcp-virustotal"],
-      "env": {
-        "VIRUSTOTAL_API_KEY": "your_virustotal_api_key"
-      }
-    }
-  }
-}
-```
-
-The npm exec method automatically downloads and runs the latest version of the package from npm.
-
-Configuration file location:
-- Windows: %APPDATA%\Claude\claude_desktop_config.json
-- macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
-
-## Usage
-
-1. Start the MCP server:
-```bash
-npm start
-```
-
-2. Launch Claude Desktop and ensure the VirusTotal MCP server is detected
-3. Use any of the available tools through the Claude interface
+If you see ES module loading warnings:
+1. For global installation: Use the simple configuration shown in Quick Start
+2. For source installation: Ensure you include `--experimental-modules` in the args
 
 ## Development
 

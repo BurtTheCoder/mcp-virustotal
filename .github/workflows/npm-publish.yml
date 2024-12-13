@@ -10,10 +10,13 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,28 +24,25 @@ jobs:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
           
-      - name: Install dependencies
-        run: npm ci
-        
       - name: Configure Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-
-      - name: Clean working directory
-        run: |
-          git reset --hard
-          git clean -fdx
-
-      - name: Bump version
-        if: github.event_name == 'push'
-        run: |
-          npm version patch -m "Bump version to %s [skip ci]"
-          git push
-          git push --tags
+        
+      - name: Install dependencies
+        run: npm ci
         
       - name: Build
         run: npm run build
+        
+      - name: Bump version
+        if: github.event_name == 'push'
+        run: |
+          git add .
+          git commit -m "Build for release" || echo "No changes to commit"
+          npm version patch -m "Bump version to %s [skip ci]"
+          git push
+          git push --tags
         
       - name: Publish to NPM
         if: success()

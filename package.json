@@ -7,11 +7,15 @@
   "bin": {
     "mcp-virustotal": "build/index.js"
   },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
     "dev": "tsc -w",
-    "version": "npm version patch",
     "prepublishOnly": "npm run build"
   },
   "keywords": ["mcp", "virustotal", "security"],

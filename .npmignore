@@ -1,31 +1,11 @@
-# Source
+# Source files (since we publish the build)
 src/
 
-# Development configs
-tsconfig.json
-.gitignore
-.env*
-.vscode/
-
-# Logs
-*.log
-server.log
-
-# Tests
-test/
-__tests__/
-*.test.ts
-*.spec.ts
-
 # Development files
-.editorconfig
-.eslintrc*
-.prettierrc*
 .github/
-docs/
+tsconfig.json
+.env*
+*.log
 
-# Dependencies
-node_modules/
-
-# Don't ignore
+# Don't ignore the build directory
 !build/

@@ -1,6 +1,6 @@
 # VirusTotal MCP Server
 
-A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides tools for scanning URLs, analyzing file hashes, and retrieving IP address reports. It is designed to integrate seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
+A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides comprehensive security analysis tools with automatic relationship data fetching. It integrates seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
 
 ## Quick Start (Recommended)
 
@@ -58,59 +58,83 @@ npm run build
 
 ## Features
 
-- **URL Scanning**: Submit and analyze URLs for potential security threats
-- **File Hash Analysis**: Get detailed analysis results for file hashes
-- **IP Reports**: Retrieve comprehensive security analysis reports for IP addresses
-- **Relationship Analysis**: Get related objects for URLs, files, and IP addresses
+- **Comprehensive Analysis Reports**: Each analysis tool automatically fetches relevant relationship data along with the basic report, providing a complete security overview in a single request
+- **URL Analysis**: Security reports with automatic fetching of contacted domains, downloaded files, and threat actors
+- **File Analysis**: Detailed analysis of file hashes including behaviors, dropped files, and network connections
+- **IP Analysis**: Security reports with historical data, resolutions, and related threats
+- **Domain Analysis**: DNS information, WHOIS data, SSL certificates, and subdomains
+- **Detailed Relationship Analysis**: Dedicated tools for querying specific types of relationships with pagination support
+- **Rich Formatting**: Clear categorization and presentation of analysis results and relationship data
 
 ## Tools
 
-### 1. URL Scan Tool
-- Name: `scan_url`
-- Description: Scan a URL for potential security threats
-- Parameters:
-  * `url` (required): The URL to scan
+### Report Tools (with Automatic Relationship Fetching)
 
-### 2. URL Relationship Tool
+### 1. URL Report Tool
+- Name: `get_url_report`
+- Description: Get a comprehensive URL analysis report including security scan results and key relationships (communicating files, contacted domains/IPs, downloaded files, redirects, threat actors)
+- Parameters:
+  * `url` (required): The URL to analyze
+
+### 2. File Report Tool
+- Name: `get_file_report`
+- Description: Get a comprehensive file analysis report using its hash (MD5/SHA-1/SHA-256). Includes detection results, file properties, and key relationships (behaviors, dropped files, network connections, embedded content, threat actors)
+- Parameters:
+  * `hash` (required): MD5, SHA-1 or SHA-256 hash of the file
+
+### 3. IP Report Tool
+- Name: `get_ip_report`
+- Description: Get a comprehensive IP address analysis report including geolocation, reputation data, and key relationships (communicating files, historical certificates/WHOIS, resolutions)
+- Parameters:
+  * `ip` (required): IP address to analyze
+
+### 4. Domain Report Tool
+- Name: `get_domain_report`
+- Description: Get a comprehensive domain analysis report including DNS records, WHOIS data, and key relationships (SSL certificates, subdomains, historical data)
+- Parameters:
+  * `domain` (required): Domain name to analyze
+  * `relationships` (optional): Array of specific relationships to include in the report
+
+### Relationship Tools (for Detailed Analysis)
+
+### 1. URL Relationship Tool
 - Name: `get_url_relationship`
-- Description: Get related objects for a URL (e.g., downloaded files, contacted domains)
+- Description: Query a specific relationship type for a URL with pagination support. Choose from 17 relationship types including analyses, communicating files, contacted domains/IPs, downloaded files, graphs, referrers, redirects, and threat actors
 - Parameters:
   * `url` (required): The URL to get relationships for
   * `relationship` (required): Type of relationship to query
     - Available relationships: analyses, comments, communicating_files, contacted_domains, contacted_ips, downloaded_files, graphs, last_serving_ip_address, network_location, referrer_files, referrer_urls, redirecting_urls, redirects_to, related_comments, related_references, related_threat_actors, submissions
-  * `limit` (optional, default: 10): Maximum number of related objects to retrieve
+  * `limit` (optional, default: 10): Maximum number of related objects to retrieve (1-40)
   * `cursor` (optional): Continuation cursor for pagination
 
-### 3. File Hash Analysis Tool
-- Name: `scan_file_hash`
-- Description: Get analysis results for a file hash
-- Parameters:
-  * `hash` (required): MD5, SHA-1 or SHA-256 hash of the file
-
-### 4. File Relationship Tool
+### 2. File Relationship Tool
 - Name: `get_file_relationship`
-- Description: Get related objects for a file (e.g., dropped files, contacted domains)
+- Description: Query a specific relationship type for a file with pagination support. Choose from 41 relationship types including behaviors, network connections, dropped files, embedded content, execution chains, and threat actors
 - Parameters:
   * `hash` (required): MD5, SHA-1 or SHA-256 hash of the file
   * `relationship` (required): Type of relationship to query
     - Available relationships: analyses, behaviours, bundled_files, carbonblack_children, carbonblack_parents, ciphered_bundled_files, ciphered_parents, clues, collections, comments, compressed_parents, contacted_domains, contacted_ips, contacted_urls, dropped_files, email_attachments, email_parents, embedded_domains, embedded_ips, embedded_urls, execution_parents, graphs, itw_domains, itw_ips, itw_urls, memory_pattern_domains, memory_pattern_ips, memory_pattern_urls, overlay_children, overlay_parents, pcap_children, pcap_parents, pe_resource_children, pe_resource_parents, related_references, related_threat_actors, similar_files, submissions, screenshots, urls_for_embedded_js, votes
-  * `limit` (optional, default: 10): Maximum number of related objects to retrieve
+  * `limit` (optional, default: 10): Maximum number of related objects to retrieve (1-40)
   * `cursor` (optional): Continuation cursor for pagination
 
-### 5. IP Report Tool
-- Name: `get_ip_report`
-- Description: Get security analysis report for an IP address
-- Parameters:
-  * `ip` (required): IP address to analyze
-
-### 6. IP Relationship Tool
+### 3. IP Relationship Tool
 - Name: `get_ip_relationship`
-- Description: Get related objects for an IP address (e.g., downloaded files, resolutions)
+- Description: Query a specific relationship type for an IP address with pagination support. Choose from 12 relationship types including communicating files, historical SSL certificates, WHOIS records, resolutions, and threat actors
 - Parameters:
   * `ip` (required): IP address to analyze
   * `relationship` (required): Type of relationship to query
     - Available relationships: comments, communicating_files, downloaded_files, graphs, historical_ssl_certificates, historical_whois, related_comments, related_references, related_threat_actors, referrer_files, resolutions, urls
-  * `limit` (optional, default: 10): Maximum number of related objects to retrieve
+  * `limit` (optional, default: 10): Maximum number of related objects to retrieve (1-40)
+  * `cursor` (optional): Continuation cursor for pagination
+
+### 4. Domain Relationship Tool
+- Name: `get_domain_relationship`
+- Description: Query a specific relationship type for a domain with pagination support. Choose from 21 relationship types including SSL certificates, subdomains, historical data, and DNS records
+- Parameters:
+  * `domain` (required): Domain name to analyze
+  * `relationship` (required): Type of relationship to query
+    - Available relationships: caa_records, cname_records, comments, communicating_files, downloaded_files, historical_ssl_certificates, historical_whois, immediate_parent, mx_records, ns_records, parent, referrer_files, related_comments, related_references, related_threat_actors, resolutions, soa_records, siblings, subdomains, urls, user_votes
+  * `limit` (optional, default: 10): Maximum number of related objects to retrieve (1-40)
   * `cursor` (optional): Continuation cursor for pagination
 
 ## Requirements
@@ -166,6 +190,7 @@ The server includes comprehensive error handling for:
 - v1.1.0: Added relationship analysis tools for URLs, files, and IP addresses
 - v1.2.0: Added improved error handling and logging
 - v1.3.0: Added pagination support for relationship queries
+- v1.4.0: Added automatic relationship fetching in report tools and domain analysis support
 
 ## Contributing
 

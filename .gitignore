@@ -4,3 +4,4 @@ build/
 .env
 .env.local
 .env.*.local
+logs/

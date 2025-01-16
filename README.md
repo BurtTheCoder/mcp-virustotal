@@ -1,10 +1,22 @@
 # VirusTotal MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@burtthecoder/mcp-virustotal)](https://smithery.ai/server/@burtthecoder/mcp-virustotal)
+
 A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides comprehensive security analysis tools with automatic relationship data fetching. It integrates seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
 
 <a href="https://glama.ai/mcp/servers/rcbu34kp5c"><img width="380" height="200" src="https://glama.ai/mcp/servers/rcbu34kp5c/badge" /></a>
 
 ## Quick Start (Recommended)
+
+### Installing via Smithery
+
+To install VirusTotal Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@burtthecoder/mcp-virustotal):
+
+```bash
+npx -y @smithery/cli install @burtthecoder/mcp-virustotal --client claude
+```
+
+### Installing Manually
 
 1. Install the server globally via npm:
 ```bash

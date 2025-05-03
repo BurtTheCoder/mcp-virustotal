@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/burtthecoder-mcp-virustotal-badge.png)](https://mseep.ai/app/burtthecoder-mcp-virustotal)
+
 # VirusTotal MCP Server
 
 [![smithery badge](https://smithery.ai/badge/@burtthecoder/mcp-virustotal)](https://smithery.ai/server/@burtthecoder/mcp-virustotal)

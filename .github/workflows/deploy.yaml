@@ -1,0 +1,44 @@
+on:
+    push:
+      branches:
+        - aditya-http
+ 
+   
+name: Build and Push to ECR
+   
+env:
+     AWS_DEFAULT_REGION: us-east-2
+     AWS_DEFAULT_OUTPUT: json
+     AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+     CONTAINER_IMAGE: virustotal-mcp
+ 
+jobs:
+     build-and-push:
+       name: Build and deploy
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout
+           uses: actions/checkout@master
+     
+         - name: Extract Git short hash
+           run: |
+             echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+     
+         - name: Setup ECR
+           run: |
+             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+     
+         - name: Build the image
+           run: |
+             docker build --no-cache -t $CONTAINER_IMAGE:$IMAGE_TAG .
+     
+         - name: Tag the image
+           run: |
+             docker tag $CONTAINER_IMAGE:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE:$IMAGE_TAG
+     
+         - name: Push image
+           run: |
+             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE:$IMAGE_TAG
+ 

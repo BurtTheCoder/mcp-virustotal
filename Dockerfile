@@ -31,4 +31,4 @@ COPY --from=builder /app/node_modules /app/node_modules
 ENV NODE_ENV=production
 
 # Define the command to run the application
-ENTRYPOINT ["node" "build/http-streamable-server.js"]
+ENTRYPOINT ["node", "build/http-streamable-server.js"]

@@ -1,5 +1,6 @@
 # VirusTotal MCP Server
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/BurtTheCoder/mcp-virustotal)](https://archestra.ai/mcp-catalog/BurtTheCoder__mcp-virustotal)
 [![smithery badge](https://smithery.ai/badge/@burtthecoder/mcp-virustotal)](https://smithery.ai/server/@burtthecoder/mcp-virustotal)
 
 A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides comprehensive security analysis tools with automatic relationship data fetching. It integrates seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
@@ -98,7 +99,7 @@ npm run build
 
 ### 3. IP Report Tool
 - Name: `get_ip_report`
-- Description: Get a comprehensive IP address analysis report including geolocation, reputation data, and key relationships (communicating files, historical certificates/WHOIS, resolutions)
+- Description: Get a comprehensive IP address analysis report including geolocation, reputation data, and key relationships (communicating files, historical SSL certificates/WHOIS, resolutions)
 - Parameters:
   * `ip` (required): IP address to analyze
 

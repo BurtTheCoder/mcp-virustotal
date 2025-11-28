@@ -15,6 +15,7 @@
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
+    "start:http": "MCP_TRANSPORT=http node build/index.js",
     "dev": "tsc -w",
     "prepublishOnly": "npm run build"
   },
@@ -33,9 +34,11 @@
     "url": "git+https://github.com/BurtTheCoder/mcp-virustotal.git"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.0.3",
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "@types/express": "^5.0.3",
     "axios": "^1.4.0",
     "dotenv": "^16.4.5",
+    "express": "^5.1.0",
     "zod": "^3.22.2",
     "zod-to-json-schema": "^3.23.5"
   },

@@ -43,6 +43,37 @@ Configuration file location:
 
 3. Restart Claude Desktop
 
+### Using with VS Code
+
+To use this MCP server in VS Code with GitHub Copilot:
+
+1. Install the server globally via npm:
+```bash
+npm install -g @burtthecoder/mcp-virustotal
+```
+
+2. Create or update your VS Code MCP configuration file at:
+   - macOS/Linux: `~/.vscode/mcp.json`
+   - Windows: `%USERPROFILE%\.vscode\mcp.json`
+
+3. Add the following configuration:
+```json
+{
+  "servers": {
+    "virustotal": {
+      "command": "mcp-virustotal",
+      "env": {
+        "VIRUSTOTAL_API_KEY": "your-virustotal-api-key"
+      }
+    }
+  }
+}
+```
+
+4. Reload VS Code to activate the MCP server
+
+You can then use the VirusTotal tools through GitHub Copilot in VS Code by referencing the available tools in your prompts.
+
 ## Alternative Setup (From Source)
 
 If you prefer to run from source or need to modify the code:

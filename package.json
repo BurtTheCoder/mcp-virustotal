@@ -33,7 +33,7 @@
     "url": "git+https://github.com/BurtTheCoder/mcp-virustotal.git"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.0.3",
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "axios": "^1.4.0",
     "dotenv": "^16.4.5",
     "zod": "^3.22.2",

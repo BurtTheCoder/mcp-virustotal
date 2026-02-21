@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024 TocharianOU Contributors
+
 import { AxiosInstance } from 'axios';
 import { queryVirusTotal } from '../utils/api.js';
 import { formatIpResults } from '../formatters/index.js';
@@ -5,103 +8,82 @@ import { GetIpReportArgsSchema, GetIpRelationshipArgsSchema } from '../schemas/i
 import { logToFile } from '../utils/logging.js';
 import { RelationshipData } from '../types/virustotal.js';
 
-// Default relationships to fetch
-const DEFAULT_RELATIONSHIPS = [
-    'communicating_files',
-    'downloaded_files',
-    'historical_ssl_certificates',
-    'resolutions',
-    'related_threat_actors',
-    'urls'
+const DEFAULT_IP_RELATIONSHIPS = [
+  'communicating_files',
+  'downloaded_files',
+  'historical_ssl_certificates',
+  'resolutions',
+  'related_threat_actors',
+  'urls',
 ] as const;
 
-export async function handleGetIpReport(axiosInstance: AxiosInstance, args: unknown) {
+export async function handleGetIpReport(client: AxiosInstance, args: unknown) {
   const parsedArgs = GetIpReportArgsSchema.safeParse(args);
   if (!parsedArgs.success) {
-    throw new Error("Invalid IP address format");
+    throw new Error('Invalid IP address format');
   }
 
-  const ip = parsedArgs.data.ip;
+  const { ip } = parsedArgs.data;
 
-  // First get the basic IP report
-  logToFile('Getting IP report...');
-  const basicReport = await queryVirusTotal(
-    axiosInstance,
-    `/ip_addresses/${ip}`
-  );
+  logToFile(`Fetching IP report: ${ip}`);
+  const basicReport = (await queryVirusTotal(client, `/ip_addresses/${ip}`)) as {
+    data: { attributes: unknown; id?: string; type?: string };
+  };
 
-  // Then get full data for specified relationships
   const relationshipData: Record<string, RelationshipData> = {};
-  
-  for (const relType of DEFAULT_RELATIONSHIPS) {
-    logToFile(`Getting full data for ${relType}...`);
-    try {
-      const response = await queryVirusTotal(
-        axiosInstance,
-        `/ip_addresses/${ip}/${relType}`,
-        'get'
-      );
 
-      // Format the relationship data
-      if (Array.isArray(response.data)) {
-        relationshipData[relType] = {
-          data: response.data,
-          meta: response.meta
-        };
-      } else if (response.data) {
-        relationshipData[relType] = {
-          data: response.data,
-          meta: response.meta
-        };
+  for (const relType of DEFAULT_IP_RELATIONSHIPS) {
+    logToFile(`Fetching relationship: ${relType}`);
+    try {
+      const response = (await queryVirusTotal(client, `/ip_addresses/${ip}/${relType}`)) as {
+        data: RelationshipData['data'];
+        meta?: RelationshipData['meta'];
+      };
+
+      if (response.data) {
+        relationshipData[relType] = { data: response.data, meta: response.meta };
       }
-    } catch (error) {
-      logToFile(`Error fetching ${relType} data: ${error}`);
-      // Continue with other relationships even if one fails
+    } catch {
+      logToFile(`Skipping ${relType} – fetch failed`);
     }
   }
 
-  // Combine the basic report with detailed relationships
   const combinedData = {
-    ...basicReport.data,
-    relationships: relationshipData
+    id: basicReport.data.id,
+    attributes: basicReport.data.attributes as Parameters<typeof formatIpResults>[0]['attributes'],
+    relationships: relationshipData,
   };
 
-  return {
-    content: [
-      formatIpResults(combinedData)
-    ],
-  };
+  return { content: [formatIpResults(combinedData)] };
 }
 
-export async function handleGetIpRelationship(axiosInstance: AxiosInstance, args: unknown) {
+export async function handleGetIpRelationship(client: AxiosInstance, args: unknown) {
   const parsedArgs = GetIpRelationshipArgsSchema.safeParse(args);
   if (!parsedArgs.success) {
-    throw new Error("Invalid arguments for IP relationship query");
+    throw new Error('Invalid arguments for IP relationship query');
   }
 
   const { ip, relationship, limit, cursor } = parsedArgs.data;
-  
-  const params: Record<string, string | number> = { limit };
+
+  const params: Record<string, string | number> = {};
+  if (limit != null) params.limit = limit;
   if (cursor) params.cursor = cursor;
-  
-  const result = await queryVirusTotal(
-    axiosInstance,
-    `/ip_addresses/${ip}/${relationship}`,
-    'get'
-  );
+
+  logToFile(`Fetching ${relationship} for IP: ${ip}`);
+  const result = (await queryVirusTotal(client, `/ip_addresses/${ip}/${relationship}`, 'get', undefined, params)) as {
+    data: { attributes: unknown };
+    meta?: RelationshipData['meta'];
+  };
 
   return {
     content: [
       formatIpResults({
         id: ip,
-        attributes: result.data.attributes,
+        attributes: result.data.attributes as Parameters<typeof formatIpResults>[0]['attributes'],
         relationships: {
-          [relationship]: {
-            data: result.data,
-            meta: result.meta
-          }
-        }
-      })
+          [relationship]: { data: result.data as RelationshipData['data'], meta: result.meta },
+        },
+      }),
     ],
   };
 }

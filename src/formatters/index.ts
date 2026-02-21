@@ -1,4 +1,5 @@
-// src/formatters/index.ts
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024 TocharianOU Contributors
 
 export { FormattedResult } from './types.js';
 export { formatDateTime, formatPercentage, formatDetectionResults } from './utils.js';

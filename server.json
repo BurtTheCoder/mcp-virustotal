@@ -1,0 +1,103 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.TocharianOU/virustotal",
+  "description": "VirusTotal MCP Server for security analysis of URLs, files, IP addresses and domains",
+  "title": "VirusTotal",
+  "websiteUrl": "https://github.com/TocharianOU/mcp-virustotal",
+  "repository": {
+    "url": "https://github.com/TocharianOU/mcp-virustotal",
+    "source": "github"
+  },
+  "version": "1.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@tocharianou/mcp-virustotal",
+      "version": "1.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "VIRUSTOTAL_API_KEY",
+          "description": "VirusTotal API key for direct access. Get yours at https://www.virustotal.com/gui/my-apikey",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "VIRUSTOTAL_BASE_URL",
+          "description": "Override the VirusTotal API base URL (e.g. for proxy / gateway access). Defaults to https://www.virustotal.com/api/v3",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "VIRUSTOTAL_AUTH_TOKEN",
+          "description": "Bearer token for proxy/gateway authentication. Used when VIRUSTOTAL_BASE_URL points to a custom endpoint.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    },
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@tocharianou/mcp-virustotal",
+      "version": "1.1.0",
+      "transport": {
+        "type": "streamable-http",
+        "url": "http://localhost:{MCP_HTTP_PORT}/mcp"
+      },
+      "environmentVariables": [
+        {
+          "name": "MCP_TRANSPORT",
+          "description": "Transport mode selection",
+          "isRequired": true,
+          "format": "string",
+          "default": "http",
+          "choices": ["stdio", "http"]
+        },
+        {
+          "name": "MCP_HTTP_PORT",
+          "description": "HTTP server port",
+          "isRequired": false,
+          "format": "number",
+          "default": "3000"
+        },
+        {
+          "name": "VIRUSTOTAL_API_KEY",
+          "description": "VirusTotal API key for direct access",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "VIRUSTOTAL_BASE_URL",
+          "description": "Override the VirusTotal API base URL",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "VIRUSTOTAL_AUTH_TOKEN",
+          "description": "Bearer token for proxy/gateway authentication",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "tool": "manual",
+      "version": "1.1.0",
+      "features": {
+        "transport_modes": ["stdio", "http"],
+        "proxy_support": true,
+        "analysis_types": ["url", "file", "ip", "domain"]
+      }
+    }
+  }
+}

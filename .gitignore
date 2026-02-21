@@ -1,6 +1,11 @@
 node_modules/
+dist/
 build/
+logs/
 *.log
+*.tar.gz
+*.sha256
+*.sha512
 .env
 .env.local
 .env.*.local

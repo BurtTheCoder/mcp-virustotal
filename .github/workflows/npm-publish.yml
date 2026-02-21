@@ -29,6 +29,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+
       - name: Configure npm registry
         run: npm config set registry https://registry.npmjs.org/
 

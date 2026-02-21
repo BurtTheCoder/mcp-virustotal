@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { z } from 'zod';
 import { queryVirusTotal, encodeUrlForVt } from '../utils/api.js';
 import { formatUrlScanResults } from '../formatters/index.js';
 import { GetUrlReportArgsSchema, GetUrlRelationshipArgsSchema } from '../schemas/index.js';
@@ -16,19 +16,13 @@ const DEFAULT_RELATIONSHIPS = [
     'related_threat_actors'
 ] as const;
 
-export async function handleGetUrlReport(axiosInstance: AxiosInstance, args: unknown) {
-  const parsedArgs = GetUrlReportArgsSchema.safeParse(args);
-  if (!parsedArgs.success) {
-    throw new Error("Invalid URL format");
-  }
-
-  const url = parsedArgs.data.url;
+export async function handleGetUrlReport(args: z.infer<typeof GetUrlReportArgsSchema>) {
+  const url = args.url;
   const encodedUrl = encodeUrlForVt(url);
 
   // First submit URL for scanning
   logToFile(`Scanning URL: ${url}`);
   const scanResponse = await queryVirusTotal(
-    axiosInstance,
     '/urls',
     'post',
     new URLSearchParams({ url })
@@ -42,7 +36,6 @@ export async function handleGetUrlReport(axiosInstance: AxiosInstance, args: unk
   
   // Get analysis results
   const analysisResponse = await queryVirusTotal(
-    axiosInstance,
     `/analyses/${analysisId}`
   );
 
@@ -53,7 +46,6 @@ export async function handleGetUrlReport(axiosInstance: AxiosInstance, args: unk
     logToFile(`Fetching ${relType}`);
     try {
       const response = await queryVirusTotal(
-        axiosInstance,
         `/urls/${encodedUrl}/${relType}`,
         'get'
       );
@@ -98,13 +90,8 @@ export async function handleGetUrlReport(axiosInstance: AxiosInstance, args: unk
   };
 }
 
-export async function handleGetUrlRelationship(axiosInstance: AxiosInstance, args: unknown) {
-  const parsedArgs = GetUrlRelationshipArgsSchema.safeParse(args);
-  if (!parsedArgs.success) {
-    throw new Error("Invalid arguments for URL relationship query");
-  }
-
-  const { url, relationship, limit, cursor } = parsedArgs.data;
+export async function handleGetUrlRelationship(args: z.infer<typeof GetUrlRelationshipArgsSchema>) {
+  const { url, relationship, limit, cursor } = args;
   const encodedUrl = encodeUrlForVt(url);
   
   const params: Record<string, string | number> = { limit };
@@ -112,7 +99,6 @@ export async function handleGetUrlRelationship(axiosInstance: AxiosInstance, arg
   
   logToFile(`Fetching ${relationship} for URL: ${url}`);
   const result = await queryVirusTotal(
-    axiosInstance,
     `/urls/${encodedUrl}/${relationship}`,
     'get'
   );

@@ -1,15 +1,7 @@
 #!/usr/bin/env node
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  InitializeRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
-import axios from 'axios';
+import { FastMCP } from "fastmcp";
 import dotenv from "dotenv";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { logToFile } from './utils/logging.js';
 import {
   GetUrlReportArgsSchema,
@@ -32,42 +24,10 @@ import {
 
 dotenv.config();
 
-const API_KEY = process.env.VIRUSTOTAL_API_KEY;
-
-if (!API_KEY) {
-  throw new Error("VIRUSTOTAL_API_KEY environment variable is required");
-}
-
-// Server Setup
-const server = new Server(
-  {
-    name: "virustotal-mcp",
-    version: "1.0.0",
-  },
-  {
-    capabilities: {
-      tools: {
-        listChanged: true,
-      },
-    },
-  }
-);
-
-// Handle Initialization
-server.setRequestHandler(InitializeRequestSchema, async (request) => {
-  logToFile("Received initialize request.");
-  return {
-    protocolVersion: "2024-11-05",
-    capabilities: {
-      tools: {
-        listChanged: true,
-      },
-    },
-    serverInfo: {
-      name: "virustotal-mcp",
-      version: "1.0.0",
-    },
-    instructions: `VirusTotal Analysis Server
+const server = new FastMCP({
+  name: "virustotal-mcp",
+  version: "1.0.0",
+  instructions: `VirusTotal Analysis Server
 
 This server provides comprehensive security analysis tools using the VirusTotal API. Each analysis tool automatically fetches relevant relationship data (e.g., contacted domains, downloaded files) along with the basic report.
 
@@ -80,121 +40,56 @@ Available Analysis Types:
 - Domains: DNS information and relationships like subdomains
 
 All tools return formatted results with clear categorization and relationship data.`,
-  };
 });
 
-// Register Tools
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  const tools = [
-    {
-      name: "get_url_report",
-      description: "Get a comprehensive URL analysis report including security scan results and key relationships (communicating files, contacted domains/IPs, downloaded files, redirects, threat actors). Returns both the basic security analysis and automatically fetched relationship data.",
-      inputSchema: zodToJsonSchema(GetUrlReportArgsSchema),
-    },
-    {
-      name: "get_url_relationship",
-      description: "Query a specific relationship type for a URL with pagination support. Choose from 17 relationship types including analyses, communicating files, contacted domains/IPs, downloaded files, graphs, referrers, redirects, and threat actors. Useful for detailed investigation of specific relationship types.",
-      inputSchema: zodToJsonSchema(GetUrlRelationshipArgsSchema),
-    },
-    {
-      name: "get_file_report",
-      description: "Get a comprehensive file analysis report using its hash (MD5/SHA-1/SHA-256). Includes detection results, file properties, and key relationships (behaviors, dropped files, network connections, embedded content, threat actors). Returns both the basic analysis and automatically fetched relationship data.",
-      inputSchema: zodToJsonSchema(GetFileReportArgsSchema),
-    },
-    {
-      name: "get_file_relationship",
-      description: "Query a specific relationship type for a file with pagination support. Choose from 41 relationship types including behaviors, network connections, dropped files, embedded content, execution chains, and threat actors. Useful for detailed investigation of specific relationship types.",
-      inputSchema: zodToJsonSchema(GetFileRelationshipArgsSchema),
-    },
-    {
-      name: "get_ip_report",
-      description: "Get a comprehensive IP address analysis report including geolocation, reputation data, and key relationships (communicating files, historical certificates/WHOIS, resolutions). Returns both the basic analysis and automatically fetched relationship data.",
-      inputSchema: zodToJsonSchema(GetIpReportArgsSchema),
-    },
-    {
-      name: "get_ip_relationship",
-      description: "Query a specific relationship type for an IP address with pagination support. Choose from 12 relationship types including communicating files, historical SSL certificates, WHOIS records, resolutions, and threat actors. Useful for detailed investigation of specific relationship types.",
-      inputSchema: zodToJsonSchema(GetIpRelationshipArgsSchema),
-    },
-    {
-      name: "get_domain_report",
-      description: "Get a comprehensive domain analysis report including DNS records, WHOIS data, and key relationships (SSL certificates, subdomains, historical data). Optionally specify which relationships to include in the report. Returns both the basic analysis and relationship data.",
-      inputSchema: zodToJsonSchema(GetDomainReportArgsSchema),
-    }
-  ];
-
-  logToFile("Registered tools.");
-  return { tools };
+server.addTool({
+  name: "get_url_report",
+  description: "Get a comprehensive URL analysis report including security scan results and key relationships (communicating files, contacted domains/IPs, downloaded files, redirects, threat actors). Returns both the basic security analysis and automatically fetched relationship data.",
+  parameters: GetUrlReportArgsSchema,
+  execute: async (args) => handleGetUrlReport(args),
 });
 
-// Create axios instance
-const axiosInstance = axios.create({
-  baseURL: 'https://www.virustotal.com/api/v3',
-  headers: {
-    'x-apikey': API_KEY,
-  },
+server.addTool({
+  name: "get_url_relationship",
+  description: "Query a specific relationship type for a URL with pagination support. Choose from 17 relationship types including analyses, communicating files, contacted domains/IPs, downloaded files, graphs, referrers, redirects, and threat actors. Useful for detailed investigation of specific relationship types.",
+  parameters: GetUrlRelationshipArgsSchema,
+  execute: async (args) => handleGetUrlRelationship(args),
 });
 
-// Handle Tool Calls
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  logToFile(`Tool called: ${request.params.name}`);
-
-  try {
-    const { name, arguments: args } = request.params;
-
-    switch (name) {
-      case "get_url_report":
-        return await handleGetUrlReport(axiosInstance, args);
-
-      case "get_url_relationship":
-        return await handleGetUrlRelationship(axiosInstance, args);
-
-      case "get_file_report":
-        return await handleGetFileReport(axiosInstance, args);
-
-      case "get_file_relationship":
-        return await handleGetFileRelationship(axiosInstance, args);
-
-      case "get_ip_report":
-        return await handleGetIpReport(axiosInstance, args);
-
-      case "get_ip_relationship":
-        return await handleGetIpRelationship(axiosInstance, args);
-
-      case "get_domain_report":
-        return await handleGetDomainReport(axiosInstance, args);
-
-      default:
-        throw new Error(`Unknown tool: ${name}`);
-    }
-  } catch (error: any) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logToFile(`Error handling tool call: ${errorMessage}`);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error: ${errorMessage}`,
-        },
-      ],
-      isError: true,
-    };
-  }
+server.addTool({
+  name: "get_file_report",
+  description: "Get a comprehensive file analysis report using its hash (MD5/SHA-1/SHA-256). Includes detection results, file properties, and key relationships (behaviors, dropped files, network connections, embedded content, threat actors). Returns both the basic analysis and automatically fetched relationship data.",
+  parameters: GetFileReportArgsSchema,
+  execute: async (args) => handleGetFileReport(args),
 });
 
-// Start the Server
-async function runServer() {
-  logToFile("Starting VirusTotal MCP Server...");
+server.addTool({
+  name: "get_file_relationship",
+  description: "Query a specific relationship type for a file with pagination support. Choose from 41 relationship types including behaviors, network connections, dropped files, embedded content, execution chains, and threat actors. Useful for detailed investigation of specific relationship types.",
+  parameters: GetFileRelationshipArgsSchema,
+  execute: async (args) => handleGetFileRelationship(args),
+});
 
-  try {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    logToFile("VirusTotal MCP Server is running.");
-  } catch (error: any) {
-    logToFile(`Error connecting server: ${error.message}`);
-    process.exit(1);
-  }
-}
+server.addTool({
+  name: "get_ip_report",
+  description: "Get a comprehensive IP address analysis report including geolocation, reputation data, and key relationships (communicating files, historical certificates/WHOIS, resolutions). Returns both the basic analysis and automatically fetched relationship data.",
+  parameters: GetIpReportArgsSchema,
+  execute: async (args) => handleGetIpReport(args),
+});
+
+server.addTool({
+  name: "get_ip_relationship",
+  description: "Query a specific relationship type for an IP address with pagination support. Choose from 12 relationship types including communicating files, historical SSL certificates, WHOIS records, resolutions, and threat actors. Useful for detailed investigation of specific relationship types.",
+  parameters: GetIpRelationshipArgsSchema,
+  execute: async (args) => handleGetIpRelationship(args),
+});
+
+server.addTool({
+  name: "get_domain_report",
+  description: "Get a comprehensive domain analysis report including DNS records, WHOIS data, and key relationships (SSL certificates, subdomains, historical data). Optionally specify which relationships to include in the report. Returns both the basic analysis and relationship data.",
+  parameters: GetDomainReportArgsSchema,
+  execute: async (args) => handleGetDomainReport(args),
+});
 
 // Handle process events
 process.on('uncaughtException', (error) => {
@@ -204,10 +99,37 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason) => {
   logToFile(`Unhandled rejection: ${reason}`);
-  process.exit(1);
 });
 
-runServer().catch((error: any) => {
+// Start the server
+async function main() {
+  const transport = process.env.MCP_TRANSPORT || "stdio";
+
+  logToFile(`Starting VirusTotal MCP Server (transport: ${transport})...`);
+
+  if (transport === "httpStream") {
+    const port = parseInt(process.env.MCP_PORT || "3000", 10);
+    const endpoint = (process.env.MCP_ENDPOINT || "/mcp") as `/${string}`;
+
+    await server.start({
+      transportType: "httpStream",
+      httpStream: {
+        port,
+        endpoint,
+      },
+    });
+
+    logToFile(`VirusTotal MCP Server listening on port ${port} at ${endpoint}`);
+  } else {
+    await server.start({
+      transportType: "stdio",
+    });
+
+    logToFile("VirusTotal MCP Server is running on stdio.");
+  }
+}
+
+main().catch((error) => {
   logToFile(`Fatal error: ${error.message}`);
   process.exit(1);
 });

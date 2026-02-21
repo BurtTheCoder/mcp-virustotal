@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { z } from 'zod';
 import { queryVirusTotal } from '../utils/api.js';
 import { formatDomainResults } from '../formatters/index.js';
 import { GetDomainReportArgsSchema } from '../schemas/index.js';
@@ -92,18 +92,12 @@ function formatRelationshipData(relType: string, item: RelationshipItem): string
     }
 }
 
-export async function handleGetDomainReport(axiosInstance: AxiosInstance, args: unknown) {
-    const parsedArgs = GetDomainReportArgsSchema.safeParse(args);
-    if (!parsedArgs.success) {
-        throw new Error("Invalid domain format");
-    }
-
-    const { domain, relationships = DEFAULT_RELATIONSHIPS } = parsedArgs.data;
+export async function handleGetDomainReport(args: z.infer<typeof GetDomainReportArgsSchema>) {
+    const { domain, relationships = DEFAULT_RELATIONSHIPS } = args;
 
     // First get the basic domain report
     logToFile('Getting domain report...');
     const basicReport = await queryVirusTotal(
-        axiosInstance,
         `/domains/${domain}`,
         'get'
     ) as DomainResponse;
@@ -115,7 +109,6 @@ export async function handleGetDomainReport(axiosInstance: AxiosInstance, args: 
         logToFile(`Getting full data for ${relType}...`);
         try {
             const response = await queryVirusTotal(
-                axiosInstance,
                 `/domains/${domain}/${relType}`,
                 'get'
             );

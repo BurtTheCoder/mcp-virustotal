@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { z } from 'zod';
 import { queryVirusTotal } from '../utils/api.js';
 import { formatFileResults } from '../formatters/index.js';
 import { GetFileReportArgsSchema, GetFileRelationshipArgsSchema } from '../schemas/index.js';
@@ -23,18 +23,12 @@ const DEFAULT_RELATIONSHIPS = [
     'similar_files'
 ] as const;
 
-export async function handleGetFileReport(axiosInstance: AxiosInstance, args: unknown) {
-  const parsedArgs = GetFileReportArgsSchema.safeParse(args);
-  if (!parsedArgs.success) {
-    throw new Error("Invalid hash format. Must be MD5, SHA-1, or SHA-256");
-  }
-
-  const hash = parsedArgs.data.hash;
+export async function handleGetFileReport(args: z.infer<typeof GetFileReportArgsSchema>) {
+  const hash = args.hash;
 
   // First get the basic file report
   logToFile('Getting file report...');
   const basicReport = await queryVirusTotal(
-    axiosInstance,
     `/files/${hash}`
   );
 
@@ -45,7 +39,6 @@ export async function handleGetFileReport(axiosInstance: AxiosInstance, args: un
     logToFile(`Getting full data for ${relType}...`);
     try {
       const response = await queryVirusTotal(
-        axiosInstance,
         `/files/${hash}/${relType}`,
         'get'
       );
@@ -81,19 +74,13 @@ export async function handleGetFileReport(axiosInstance: AxiosInstance, args: un
   };
 }
 
-export async function handleGetFileRelationship(axiosInstance: AxiosInstance, args: unknown) {
-  const parsedArgs = GetFileRelationshipArgsSchema.safeParse(args);
-  if (!parsedArgs.success) {
-    throw new Error("Invalid arguments for file relationship query");
-  }
-
-  const { hash, relationship, limit, cursor } = parsedArgs.data;
+export async function handleGetFileRelationship(args: z.infer<typeof GetFileRelationshipArgsSchema>) {
+  const { hash, relationship, limit, cursor } = args;
   
   const params: Record<string, string | number> = { limit };
   if (cursor) params.cursor = cursor;
   
   const result = await queryVirusTotal(
-    axiosInstance,
     `/files/${hash}/${relationship}`,
     'get'
   );

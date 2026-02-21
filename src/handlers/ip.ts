@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { z } from 'zod';
 import { queryVirusTotal } from '../utils/api.js';
 import { formatIpResults } from '../formatters/index.js';
 import { GetIpReportArgsSchema, GetIpRelationshipArgsSchema } from '../schemas/index.js';
@@ -15,18 +15,12 @@ const DEFAULT_RELATIONSHIPS = [
     'urls'
 ] as const;
 
-export async function handleGetIpReport(axiosInstance: AxiosInstance, args: unknown) {
-  const parsedArgs = GetIpReportArgsSchema.safeParse(args);
-  if (!parsedArgs.success) {
-    throw new Error("Invalid IP address format");
-  }
-
-  const ip = parsedArgs.data.ip;
+export async function handleGetIpReport(args: z.infer<typeof GetIpReportArgsSchema>) {
+  const ip = args.ip;
 
   // First get the basic IP report
   logToFile('Getting IP report...');
   const basicReport = await queryVirusTotal(
-    axiosInstance,
     `/ip_addresses/${ip}`
   );
 
@@ -37,7 +31,6 @@ export async function handleGetIpReport(axiosInstance: AxiosInstance, args: unkn
     logToFile(`Getting full data for ${relType}...`);
     try {
       const response = await queryVirusTotal(
-        axiosInstance,
         `/ip_addresses/${ip}/${relType}`,
         'get'
       );
@@ -73,19 +66,13 @@ export async function handleGetIpReport(axiosInstance: AxiosInstance, args: unkn
   };
 }
 
-export async function handleGetIpRelationship(axiosInstance: AxiosInstance, args: unknown) {
-  const parsedArgs = GetIpRelationshipArgsSchema.safeParse(args);
-  if (!parsedArgs.success) {
-    throw new Error("Invalid arguments for IP relationship query");
-  }
-
-  const { ip, relationship, limit, cursor } = parsedArgs.data;
+export async function handleGetIpRelationship(args: z.infer<typeof GetIpRelationshipArgsSchema>) {
+  const { ip, relationship, limit, cursor } = args;
   
   const params: Record<string, string | number> = { limit };
   if (cursor) params.cursor = cursor;
   
   const result = await queryVirusTotal(
-    axiosInstance,
     `/ip_addresses/${ip}/${relationship}`,
     'get'
   );

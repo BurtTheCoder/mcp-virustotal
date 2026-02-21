@@ -92,7 +92,7 @@ npm run build
   "mcpServers": {
     "virustotal": {
       "command": "node",
-      "args": ["--experimental-modules", "/absolute/path/to/mcp-virustotal/build/index.js"],
+      "args": ["/absolute/path/to/mcp-virustotal/build/index.js"],
       "env": {
         "VIRUSTOTAL_API_KEY": "your-virustotal-api-key"
       }
@@ -100,6 +100,39 @@ npm run build
   }
 }
 ```
+
+## HTTP Streaming Transport
+
+The server supports HTTP streaming transport in addition to the default stdio transport. This is useful for running the server as a standalone HTTP service that multiple clients can connect to.
+
+### Running in HTTP Streaming Mode
+
+Set the `MCP_TRANSPORT` environment variable to `httpStream`:
+
+```bash
+MCP_TRANSPORT=httpStream MCP_PORT=3000 VIRUSTOTAL_API_KEY=your-key node build/index.js
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `VIRUSTOTAL_API_KEY` | *(required)* | Your VirusTotal API key |
+| `MCP_TRANSPORT` | `stdio` | Transport mode: `stdio` or `httpStream` |
+| `MCP_PORT` | `3000` | HTTP server port (only for `httpStream`) |
+| `MCP_ENDPOINT` | `/mcp` | HTTP endpoint path (only for `httpStream`) |
+
+### Docker with HTTP Streaming
+
+```bash
+docker build -t mcp-virustotal .
+docker run -p 3000:3000 \
+  -e VIRUSTOTAL_API_KEY=your-key \
+  -e MCP_TRANSPORT=httpStream \
+  mcp-virustotal
+```
+
+The server exposes a health check endpoint at `/health` when running in HTTP streaming mode.
 
 ## Features
 
@@ -203,12 +236,6 @@ If you see "Wrong API key" errors:
    - Restart Claude Desktop
    - Check logs for new API key status
 
-### Module Loading Issues
-
-If you see ES module loading warnings:
-1. For global installation: Use the simple configuration shown in Quick Start
-2. For source installation: Ensure you include `--experimental-modules` in the args
-
 ## Development
 
 To run in development mode with hot reloading:
@@ -236,6 +263,7 @@ The server includes comprehensive error handling for:
 - v1.2.0: Added improved error handling and logging
 - v1.3.0: Added pagination support for relationship queries
 - v1.4.0: Added automatic relationship fetching in report tools and domain analysis support
+- v1.5.0: Migrated to FastMCP framework with HTTP streaming transport support
 
 ## Contributing
 

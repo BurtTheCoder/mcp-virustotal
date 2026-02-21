@@ -1,6 +1,22 @@
-import { AxiosInstance, AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import axios from 'axios';
+import dotenv from 'dotenv';
 import { logToFile } from './logging.js';
+
+dotenv.config();
+
+const API_KEY = process.env.VIRUSTOTAL_API_KEY;
+
+if (!API_KEY) {
+  throw new Error("VIRUSTOTAL_API_KEY environment variable is required");
+}
+
+export const axiosInstance = axios.create({
+  baseURL: 'https://www.virustotal.com/api/v3',
+  headers: {
+    'x-apikey': API_KEY,
+  },
+});
 
 export interface VirusTotalErrorResponse {
   error?: {
@@ -10,9 +26,8 @@ export interface VirusTotalErrorResponse {
 
 // Helper Function to Query VirusTotal API
 export async function queryVirusTotal(
-  axiosInstance: AxiosInstance, 
-  endpoint: string, 
-  method: 'get' | 'post' = 'get', 
+  endpoint: string,
+  method: 'get' | 'post' = 'get',
   data?: any,
   params?: Record<string, string | number | boolean>
 ) {

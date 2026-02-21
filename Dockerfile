@@ -30,5 +30,8 @@ COPY --from=builder /app/node_modules /app/node_modules
 # Set environment variables (the API key should be set as an environment variable at runtime)
 ENV NODE_ENV=production
 
+# Expose port for HTTP streaming mode
+EXPOSE 3000
+
 # Define the command to run the application
 ENTRYPOINT ["node", "build/index.js"]

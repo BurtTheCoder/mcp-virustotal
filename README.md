@@ -217,7 +217,7 @@ The server exposes a health check endpoint at `/health` when running in HTTP str
 
 ## Requirements
 
-- Node.js (v18 or later)
+- Node.js (v20 or later)
 - A valid [VirusTotal API Key](https://www.virustotal.com/gui/my-apikey)
 
 ## Troubleshooting

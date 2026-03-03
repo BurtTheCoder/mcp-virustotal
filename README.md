@@ -5,8 +5,6 @@
 
 A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides comprehensive security analysis tools with automatic relationship data fetching. It integrates seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
 
-<a href="https://glama.ai/mcp/servers/rcbu34kp5c"><img width="380" height="200" src="https://glama.ai/mcp/servers/rcbu34kp5c/badge" /></a>
-
 ## Quick Start (Recommended)
 
 ### Claude Code

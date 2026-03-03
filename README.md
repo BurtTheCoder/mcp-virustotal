@@ -1,5 +1,6 @@
 # VirusTotal MCP Server
 
+[![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://registry.modelcontextprotocol.io)
 [![smithery badge](https://smithery.ai/badge/@burtthecoder/mcp-virustotal)](https://smithery.ai/server/@burtthecoder/mcp-virustotal)
 
 A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://www.virustotal.com/). This server provides comprehensive security analysis tools with automatic relationship data fetching. It integrates seamlessly with MCP-compatible applications like [Claude Desktop](https://claude.ai).
@@ -7,6 +8,21 @@ A Model Context Protocol (MCP) server for querying the [VirusTotal API](https://
 <a href="https://glama.ai/mcp/servers/rcbu34kp5c"><img width="380" height="200" src="https://glama.ai/mcp/servers/rcbu34kp5c/badge" /></a>
 
 ## Quick Start (Recommended)
+
+### Claude Code
+```bash
+claude mcp add --transport stdio --env VIRUSTOTAL_API_KEY=your-key virustotal -- npx -y @burtthecoder/mcp-virustotal
+```
+
+### Codex CLI
+```bash
+codex mcp add virustotal --env VIRUSTOTAL_API_KEY=your-key -- npx -y @burtthecoder/mcp-virustotal
+```
+
+### Gemini CLI
+```bash
+gemini mcp add -e VIRUSTOTAL_API_KEY=your-key virustotal npx -y @burtthecoder/mcp-virustotal
+```
 
 ### Installing via Smithery
 

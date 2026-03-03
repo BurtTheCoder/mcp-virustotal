@@ -1,6 +1,7 @@
 {
   "name": "@burtthecoder/mcp-virustotal",
-  "version": "1.0.16",
+  "mcpName": "io.github.BurtTheCoder/virustotal",
+  "version": "1.0.17",
   "description": "MCP server for VirusTotal API integration",
   "type": "module",
   "main": "build/index.js",

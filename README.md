@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/burtthecoder-mcp-virustotal-badge.png)](https://mseep.ai/app/burtthecoder-mcp-virustotal)
+
 # VirusTotal MCP Server
 
 [![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://registry.modelcontextprotocol.io)

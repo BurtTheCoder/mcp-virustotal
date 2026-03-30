@@ -88,6 +88,10 @@ npm install -g @burtthecoder/mcp-virustotal
 
 You can then use the VirusTotal tools through GitHub Copilot in VS Code by referencing the available tools in your prompts.
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/burtthecoder-mcp-virustotal).
+
 ## Alternative Setup (From Source)
 
 If you prefer to run from source or need to modify the code:

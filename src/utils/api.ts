@@ -1,114 +1,150 @@
-import { AxiosError } from 'axios';
-import axios from 'axios';
-import dotenv from 'dotenv';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import { logToFile } from './logging.js';
 
-dotenv.config();
-
-const API_KEY = process.env.VIRUSTOTAL_API_KEY;
-
-if (!API_KEY) {
-  throw new Error("VIRUSTOTAL_API_KEY environment variable is required");
+export class VirusTotalApiError extends Error {
+  constructor(message: string, public status?: number, public code?: string) {
+    super(message);
+    this.name = 'VirusTotalApiError';
+  }
 }
 
-export const axiosInstance = axios.create({
-  baseURL: 'https://www.virustotal.com/api/v3',
-  headers: {
-    'x-apikey': API_KEY,
-  },
-});
+let axiosInstance: AxiosInstance | null = null;
 
-export interface VirusTotalErrorResponse {
-  error?: {
-    message?: string;
-  };
+export function initVirusTotalClient(): void {
+  const apiKey = process.env.VIRUSTOTAL_API_KEY;
+  if (!apiKey) {
+    throw new Error('VIRUSTOTAL_API_KEY environment variable is required');
+  }
+  axiosInstance = axios.create({
+    baseURL: 'https://www.virustotal.com/api/v3',
+    headers: { 'x-apikey': apiKey },
+  });
 }
 
-// Helper Function to Query VirusTotal API
+function getClient(): AxiosInstance {
+  if (!axiosInstance) initVirusTotalClient();
+  return axiosInstance!;
+}
+
+interface VirusTotalErrorResponse {
+  error?: { code?: string; message?: string };
+}
+
 export async function queryVirusTotal(
   endpoint: string,
   method: 'get' | 'post' = 'get',
   data?: any,
   params?: Record<string, string | number | boolean>
 ) {
-  if (!endpoint) {
-    throw new Error('Endpoint is required');
-  }
+  if (!endpoint) throw new Error('Endpoint is required');
+  const client = getClient();
   try {
-    // Log minimal request details
     logToFile(`${method.toUpperCase()} ${endpoint}`);
-    
-    if (params) {
-      // Log only param keys, not values
-      logToFile(`Request params: ${Object.keys(params).join(', ')}`);
-    }
-    
-    const response = method === 'get' 
-      ? await axiosInstance.get(endpoint, { params })
-      : await axiosInstance.post(endpoint, data, { params });
+    if (params) logToFile(`Request params: ${Object.keys(params).join(', ')}`);
 
-    // Log minimal response info
+    const response = method === 'get'
+      ? await client.get(endpoint, { params })
+      : await client.post(endpoint, data, { params });
+
     logToFile(`Response status: ${response.status}`);
-    
     return response.data;
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<VirusTotalErrorResponse>;
-      // Log only essential error info
-      logToFile(`API Error: ${axiosError.response?.status} - ${
-        axiosError.response?.data?.error?.message || axiosError.message
-      }`);
-      throw new Error(`VirusTotal API error: ${
-        axiosError.response?.data?.error?.message || axiosError.message
-      }`);
+      const status = axiosError.response?.status;
+      const code = axiosError.response?.data?.error?.code;
+      const message = axiosError.response?.data?.error?.message || axiosError.message;
+      logToFile(`API Error: ${status} - ${message}`);
+      throw new VirusTotalApiError(`VirusTotal API error: ${message}`, status, code);
     }
     throw error;
   }
 }
 
-// Helper function to encode URL for VirusTotal API
 export function encodeUrlForVt(url: string): string {
   return Buffer.from(url).toString('base64url');
 }
 
-// Helper function to get all available relationships for each type
+// Canonical relationship lists per VirusTotal API v3 docs
+// (https://virustotal.readme.io/llms.txt — verified May 2026).
+// Single source of truth: schemas/index.ts derives Zod enums from this.
 export const RELATIONSHIPS = {
   url: [
-    "analyses", "comments", "communicating_files", "contacted_domains", 
-    "contacted_ips", "downloaded_files", "graphs", "last_serving_ip_address",
-    "network_location", "referrer_files", "referrer_urls", "redirecting_urls",
-    "redirects_to", "related_comments", "related_references", "related_threat_actors",
-    "submissions"
+    'analyses', 'collections', 'comments', 'communicating_files',
+    'contacted_domains', 'contacted_ips', 'downloaded_files',
+    'embedded_js_files', 'graphs', 'last_serving_ip_address',
+    'network_location', 'referrer_files', 'referrer_urls',
+    'redirecting_urls', 'redirects_to', 'related_comments',
+    'related_references', 'related_threat_actors', 'submissions',
+    'urls_related_by_tracker_id', 'user_votes', 'votes',
   ],
   file: [
-    "analyses", "behaviours", "bundled_files", "carbonblack_children",
-    "carbonblack_parents", "ciphered_bundled_files", "ciphered_parents",
-    "clues", "collections", "comments", "compressed_parents", "contacted_domains",
-    "contacted_ips", "contacted_urls", "dropped_files", "email_attachments",
-    "email_parents", "embedded_domains", "embedded_ips", "embedded_urls",
-    "execution_parents", "graphs", "itw_domains", "itw_ips", "itw_urls",
-    "memory_pattern_domains", "memory_pattern_ips", "memory_pattern_urls",
-    "overlay_children", "overlay_parents", "pcap_children", "pcap_parents",
-    "pe_resource_children", "pe_resource_parents", "related_references",
-    "related_threat_actors", "similar_files", "submissions", "screenshots",
-    "urls_for_embedded_js", "votes"
+    'analyses', 'behaviours', 'bundled_files', 'carbonblack_children',
+    'carbonblack_parents', 'ciphered_bundled_files', 'ciphered_parents',
+    'collections', 'comments', 'compressed_parents', 'contacted_domains',
+    'contacted_ips', 'contacted_urls', 'dropped_files', 'email_attachments',
+    'email_parents', 'embedded_domains', 'embedded_ips', 'embedded_urls',
+    'execution_parents', 'graphs', 'itw_domains', 'itw_ips', 'itw_urls',
+    'memory_pattern_domains', 'memory_pattern_ips', 'memory_pattern_urls',
+    'overlay_children', 'overlay_parents', 'pcap_children', 'pcap_parents',
+    'pe_resource_children', 'pe_resource_parents', 'related_references',
+    'related_threat_actors', 'similar_files', 'submissions', 'screenshots',
+    'urls_for_embedded_js', 'votes',
   ],
   ip: [
-    "comments", "communicating_files", "downloaded_files", "graphs",
-    "historical_ssl_certificates", "historical_whois", "related_comments",
-    "related_references", "related_threat_actors", "referrer_files",
-    "resolutions", "urls"
+    'collections', 'comments', 'communicating_files', 'downloaded_files',
+    'graphs', 'historical_ssl_certificates', 'historical_whois',
+    'related_comments', 'related_references', 'related_threat_actors',
+    'referrer_files', 'resolutions', 'urls', 'user_votes', 'votes',
   ],
   domain: [
-    "caa_records", "cname_records", "comments", "communicating_files",
-    "downloaded_files", "graphs", "historical_ssl_certificates", "historical_whois",
-    "immediate_parent", "mx_records", "ns_records", "parent", "referrer_files",
-    "related_comments", "related_references", "related_threat_actors",
-    "resolutions", "soa_records", "siblings", "subdomains", "urls", "user_votes"
-  ]
+    'caa_records', 'cname_records', 'collections', 'comments',
+    'communicating_files', 'downloaded_files', 'graphs',
+    'historical_ssl_certificates', 'historical_whois', 'immediate_parent',
+    'mx_records', 'ns_records', 'parent', 'referrer_files',
+    'related_comments', 'related_references', 'related_threat_actors',
+    'resolutions', 'soa_records', 'siblings', 'subdomains', 'urls',
+    'user_votes', 'votes',
+  ],
 } as const;
 
-// Helper function to get relationships query parameter
-export function getRelationshipsParam(type: keyof typeof RELATIONSHIPS): string {
-  return RELATIONSHIPS[type].join(',');
+// VT caps the relationships you can request in a single call; batch to be safe.
+const RELATIONSHIPS_PER_REQUEST = 8;
+
+// Fetch an object + a set of relationship summaries in as few calls as
+// possible by using VT's `?relationships=a,b,c` query, batched.
+export async function queryVirusTotalWithRelationships(
+  baseEndpoint: string,
+  relationships: readonly string[],
+): Promise<any> {
+  if (relationships.length === 0) {
+    return queryVirusTotal(baseEndpoint);
+  }
+
+  const batches: string[][] = [];
+  for (let i = 0; i < relationships.length; i += RELATIONSHIPS_PER_REQUEST) {
+    batches.push([...relationships.slice(i, i + RELATIONSHIPS_PER_REQUEST)]);
+  }
+
+  const responses = await Promise.all(
+    batches.map((batch) =>
+      queryVirusTotal(baseEndpoint, 'get', undefined, {
+        relationships: batch.join(','),
+      }),
+    ),
+  );
+
+  const base = responses[0];
+  const mergedRelationships = responses.reduce<Record<string, any>>(
+    (acc, r) => ({ ...acc, ...(r?.data?.relationships || {}) }),
+    {},
+  );
+
+  return {
+    ...base,
+    data: {
+      ...base.data,
+      relationships: mergedRelationships,
+    },
+  };
 }

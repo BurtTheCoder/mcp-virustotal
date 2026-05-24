@@ -17,6 +17,8 @@
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
     "dev": "tsc -w",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "smoke": "npm run build && node scripts/smoke-test.mjs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

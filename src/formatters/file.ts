@@ -87,7 +87,7 @@ function formatRelationshipData(relType: string, item: any): string {
 
       const network = attrs.ids_results?.map((result: any) => {
         const ctx = result.alert_context || {};
-        return `${result.rule_msg} (${ctx.protocol || 'unknown'} ${ctx.src_ip || ''}:${ctx.src_port || ''} -> ${ctx.dest_ip || ''}:${ctx.dest_port || ''})`;
+        return `${result.rule_msg} (${ctx.proto || 'unknown'} ${ctx.src_ip || ''}:${ctx.src_port || ''} -> ${ctx.dest_ip || ''}:${ctx.dest_port || ''})`;
       }) || [];
 
       return `  • Sandbox: ${attrs.sandbox_name || 'Unknown'}

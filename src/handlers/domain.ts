@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { queryVirusTotal, queryVirusTotalWithRelationships } from '../utils/api.js';
-import { formatDomainResults } from '../formatters/index.js';
+import { formatDomainResults, formatRelationshipPage } from '../formatters/index.js';
 import {
   GetDomainReportArgsSchema,
   GetDomainRelationshipArgsSchema,
@@ -156,31 +156,15 @@ export async function handleGetDomainRelationship(
     params,
   );
 
-  // Attach formattedOutput for the existing domain formatter.
-  const relationshipData: Record<string, RelationshipData> = {};
-  if (Array.isArray(result.data)) {
-    relationshipData[relationship] = {
-      data: result.data.map((item: RelationshipItem) => ({
-        ...item,
-        formattedOutput: formatRelationshipData(relationship, item),
-      })),
-      meta: result.meta,
-    };
-  } else if (result.data) {
-    relationshipData[relationship] = {
-      data: {
-        ...result.data,
-        formattedOutput: formatRelationshipData(relationship, result.data),
-      },
-      meta: result.meta,
-    };
-  }
-
   return {
     content: [
-      formatDomainResults({
-        id: domain,
-        relationships: relationshipData,
+      formatRelationshipPage({
+        entity: 'domain',
+        entityId: domain,
+        relationship,
+        data: result.data,
+        meta: result.meta,
+        renderItem: formatRelationshipData,
       }),
     ],
   };

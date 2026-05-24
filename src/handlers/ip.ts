@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { queryVirusTotal, queryVirusTotalWithRelationships } from '../utils/api.js';
-import { formatIpResults } from '../formatters/index.js';
+import {
+  formatIpResults,
+  formatIpRelationshipItem,
+  formatRelationshipPage,
+} from '../formatters/index.js';
 import { GetIpReportArgsSchema, GetIpRelationshipArgsSchema } from '../schemas/index.js';
 import { logToFile } from '../utils/logging.js';
 
@@ -40,14 +44,13 @@ export async function handleGetIpRelationship(args: z.infer<typeof GetIpRelation
 
   return {
     content: [
-      formatIpResults({
-        id: ip,
-        relationships: {
-          [relationship]: {
-            data: result.data,
-            meta: result.meta,
-          },
-        },
+      formatRelationshipPage({
+        entity: 'ip',
+        entityId: ip,
+        relationship,
+        data: result.data,
+        meta: result.meta,
+        renderItem: formatIpRelationshipItem,
       }),
     ],
   };

@@ -64,9 +64,9 @@ export interface UrlData {
   relationships?: Record<string, RelationshipData>;
 }
 
-function formatRelationshipData(relType: string, item: any): string {
+export function formatRelationshipData(relType: string, item: any): string {
   const attrs = item.attributes || {};
-  
+
   switch (relType) {
     case 'communicating_files':
     case 'downloaded_files':

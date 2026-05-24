@@ -71,7 +71,7 @@ interface IpData {
   relationships?: Record<string, RelationshipData>;
 }
 
-function formatRelationshipData(relType: string, item: any): string {
+export function formatRelationshipData(relType: string, item: any): string {
   const attrs = item.attributes || {};
   
   switch (relType) {

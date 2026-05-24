@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { queryVirusTotal, queryVirusTotalWithRelationships } from '../utils/api.js';
-import { formatFileResults, formatBehaviourSummary } from '../formatters/index.js';
+import {
+  formatFileResults,
+  formatFileRelationshipItem,
+  formatBehaviourSummary,
+  formatRelationshipPage,
+} from '../formatters/index.js';
 import {
   GetFileReportArgsSchema,
   GetFileRelationshipArgsSchema,
@@ -52,13 +57,13 @@ export async function handleGetFileRelationship(args: z.infer<typeof GetFileRela
 
   return {
     content: [
-      formatFileResults({
-        relationships: {
-          [relationship]: {
-            data: result.data,
-            meta: result.meta,
-          },
-        },
+      formatRelationshipPage({
+        entity: 'file',
+        entityId: hash,
+        relationship,
+        data: result.data,
+        meta: result.meta,
+        renderItem: formatFileRelationshipItem,
       }),
     ],
   };

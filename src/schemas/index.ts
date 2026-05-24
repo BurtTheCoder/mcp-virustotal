@@ -87,7 +87,7 @@ export const GetCollectionArgsSchema = z.object({
     .min(1)
     .describe('Collection ID (e.g. a threat-actor, malware family, campaign, or report identifier returned from a relationship lookup)'),
   relationships: z
-    .array(z.string())
+    .array(z.enum(RELATIONSHIPS.collection))
     .optional()
-    .describe('Optional list of relationships to include (e.g. ["files", "urls", "domains", "ip_addresses", "references", "threat_actors", "attack_techniques"])'),
+    .describe('Optional list of relationships to include in the response'),
 });

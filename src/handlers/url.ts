@@ -5,7 +5,11 @@ import {
   encodeUrlForVt,
   VirusTotalApiError,
 } from '../utils/api.js';
-import { formatUrlScanResults } from '../formatters/index.js';
+import {
+  formatUrlScanResults,
+  formatUrlRelationshipItem,
+  formatRelationshipPage,
+} from '../formatters/index.js';
 import { GetUrlReportArgsSchema, GetUrlRelationshipArgsSchema } from '../schemas/index.js';
 import { logToFile } from '../utils/logging.js';
 
@@ -87,14 +91,13 @@ export async function handleGetUrlRelationship(args: z.infer<typeof GetUrlRelati
 
   return {
     content: [
-      formatUrlScanResults({
-        url,
-        relationships: {
-          [relationship]: {
-            data: result.data,
-            meta: result.meta,
-          },
-        },
+      formatRelationshipPage({
+        entity: 'url',
+        entityId: url,
+        relationship,
+        data: result.data,
+        meta: result.meta,
+        renderItem: formatUrlRelationshipItem,
       }),
     ],
   };

@@ -64,3 +64,30 @@ export const GetDomainRelationshipArgsSchema = z.object({
     .describe('Domain name to analyze'),
   relationship: z.enum(RELATIONSHIPS.domain).describe('Type of relationship to query'),
 }).merge(PaginationSchema);
+
+export const SearchArgsSchema = z.object({
+  query: z
+    .string()
+    .min(1)
+    .describe('Search query. Accepts file hashes, URLs, domains, IPs, comments, or VTI-style search modifiers (e.g. "type:peexe size:90kb+ tag:signed")'),
+  limit: z.number().min(1).max(300).optional().default(20),
+  cursor: z.string().optional(),
+});
+
+export const GetFileBehaviourSummaryArgsSchema = z.object({
+  hash: z
+    .string()
+    .regex(/^[a-fA-F0-9]{32,64}$/, 'Must be a valid MD5, SHA-1, or SHA-256 hash')
+    .describe('MD5, SHA-1 or SHA-256 hash of the file'),
+});
+
+export const GetCollectionArgsSchema = z.object({
+  id: z
+    .string()
+    .min(1)
+    .describe('Collection ID (e.g. a threat-actor, malware family, campaign, or report identifier returned from a relationship lookup)'),
+  relationships: z
+    .array(z.string())
+    .optional()
+    .describe('Optional list of relationships to include (e.g. ["files", "urls", "domains", "ip_addresses", "references", "threat_actors", "attack_techniques"])'),
+});

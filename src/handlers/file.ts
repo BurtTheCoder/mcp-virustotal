@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { queryVirusTotal, queryVirusTotalWithRelationships } from '../utils/api.js';
-import { formatFileResults } from '../formatters/index.js';
-import { GetFileReportArgsSchema, GetFileRelationshipArgsSchema } from '../schemas/index.js';
+import { formatFileResults, formatBehaviourSummary } from '../formatters/index.js';
+import {
+  GetFileReportArgsSchema,
+  GetFileRelationshipArgsSchema,
+  GetFileBehaviourSummaryArgsSchema,
+} from '../schemas/index.js';
 import { logToFile } from '../utils/logging.js';
 
 const DEFAULT_RELATIONSHIPS = [
@@ -57,5 +61,16 @@ export async function handleGetFileRelationship(args: z.infer<typeof GetFileRela
         },
       }),
     ],
+  };
+}
+
+export async function handleGetFileBehaviourSummary(
+  args: z.infer<typeof GetFileBehaviourSummaryArgsSchema>,
+) {
+  const { hash } = args;
+  logToFile(`Getting behaviour summary for ${hash}`);
+  const result = await queryVirusTotal(`/files/${hash}/behaviour_summary`);
+  return {
+    content: [formatBehaviourSummary(hash, result.data)],
   };
 }

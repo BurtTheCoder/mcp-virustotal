@@ -1,7 +1,10 @@
 import { z } from 'zod';
-import { queryVirusTotalWithRelationships } from '../utils/api.js';
+import { queryVirusTotal, queryVirusTotalWithRelationships } from '../utils/api.js';
 import { formatDomainResults } from '../formatters/index.js';
-import { GetDomainReportArgsSchema } from '../schemas/index.js';
+import {
+  GetDomainReportArgsSchema,
+  GetDomainRelationshipArgsSchema,
+} from '../schemas/index.js';
 import { logToFile } from '../utils/logging.js';
 import { RelationshipItem, RelationshipData, DomainResponse } from '../types/virustotal.js';
 
@@ -134,5 +137,51 @@ export async function handleGetDomainReport(args: z.infer<typeof GetDomainReport
 
   return {
     content: [formatDomainResults(combinedData)],
+  };
+}
+
+export async function handleGetDomainRelationship(
+  args: z.infer<typeof GetDomainRelationshipArgsSchema>,
+) {
+  const { domain, relationship, limit, cursor } = args;
+
+  const params: Record<string, string | number> = { limit };
+  if (cursor) params.cursor = cursor;
+
+  logToFile(`Fetching ${relationship} for domain: ${domain}`);
+  const result = await queryVirusTotal(
+    `/domains/${domain}/${relationship}`,
+    'get',
+    undefined,
+    params,
+  );
+
+  // Attach formattedOutput for the existing domain formatter.
+  const relationshipData: Record<string, RelationshipData> = {};
+  if (Array.isArray(result.data)) {
+    relationshipData[relationship] = {
+      data: result.data.map((item: RelationshipItem) => ({
+        ...item,
+        formattedOutput: formatRelationshipData(relationship, item),
+      })),
+      meta: result.meta,
+    };
+  } else if (result.data) {
+    relationshipData[relationship] = {
+      data: {
+        ...result.data,
+        formattedOutput: formatRelationshipData(relationship, result.data),
+      },
+      meta: result.meta,
+    };
+  }
+
+  return {
+    content: [
+      formatDomainResults({
+        id: domain,
+        relationships: relationshipData,
+      }),
+    ],
   };
 }

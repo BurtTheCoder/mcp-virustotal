@@ -12,18 +12,26 @@ import {
   GetUrlRelationshipArgsSchema,
   GetFileReportArgsSchema,
   GetFileRelationshipArgsSchema,
+  GetFileBehaviourSummaryArgsSchema,
   GetIpReportArgsSchema,
   GetIpRelationshipArgsSchema,
   GetDomainReportArgsSchema,
+  GetDomainRelationshipArgsSchema,
+  SearchArgsSchema,
+  GetCollectionArgsSchema,
 } from './schemas/index.js';
 import {
   handleGetUrlReport,
   handleGetUrlRelationship,
   handleGetFileReport,
   handleGetFileRelationship,
+  handleGetFileBehaviourSummary,
   handleGetIpReport,
   handleGetIpRelationship,
   handleGetDomainReport,
+  handleGetDomainRelationship,
+  handleSearch,
+  handleGetCollection,
 } from './handlers/index.js';
 
 dotenv.config();
@@ -102,6 +110,37 @@ server.addTool({
     'Get a comprehensive domain analysis report including DNS records, WHOIS data, and key relationships (SSL certificates, subdomains, historical data). Optionally specify which relationships to include in the report. Returns both the basic analysis and relationship data.',
   parameters: GetDomainReportArgsSchema,
   execute: async (args) => handleGetDomainReport(args),
+});
+
+server.addTool({
+  name: 'get_domain_relationship',
+  description: `Query a specific relationship type for a domain with pagination support. Choose from ${RELATIONSHIPS.domain.length} relationship types including subdomains, resolutions, SSL certificates, WHOIS history, and threat actors. Useful for detailed investigation of specific relationship types.`,
+  parameters: GetDomainRelationshipArgsSchema,
+  execute: async (args) => handleGetDomainRelationship(args),
+});
+
+server.addTool({
+  name: 'search_vt',
+  description:
+    'Search the VirusTotal corpus for files, URLs, domains, IPs, or comments matching a query. Accepts plain IOCs (hash, URL, domain, IP), free text against comments, or VTI-style search modifiers like "type:peexe size:90kb+ tag:signed positives:5+". Paginated via cursor.',
+  parameters: SearchArgsSchema,
+  execute: async (args) => handleSearch(args),
+});
+
+server.addTool({
+  name: 'get_file_behaviour_summary',
+  description:
+    'Get a consolidated sandbox behaviour summary for a file (MD5/SHA-1/SHA-256), merged across every sandbox that analyzed it. Returns processes, files, registry, network activity, MITRE ATT&CK techniques, IDS alerts, and signature matches in a single view — far more useful than iterating individual behaviour reports.',
+  parameters: GetFileBehaviourSummaryArgsSchema,
+  execute: async (args) => handleGetFileBehaviourSummary(args),
+});
+
+server.addTool({
+  name: 'get_collection',
+  description:
+    'Retrieve a VirusTotal collection by ID. Collections represent threat actors, malware families, campaigns, intel reports, and curated IOC sets — often referenced from the related_threat_actors and collections relationships on other tools. Optionally include relationships (e.g. files, urls, domains, ip_addresses, references, threat_actors, attack_techniques) to fetch member IOCs in the same call.',
+  parameters: GetCollectionArgsSchema,
+  execute: async (args) => handleGetCollection(args),
 });
 
 process.on('uncaughtException', (error) => {

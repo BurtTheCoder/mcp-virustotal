@@ -7,3 +7,6 @@ export { formatFileResults } from './file.js';
 export { formatIpResults } from './ip.js';
 export { formatDomainResults } from './domain.js';
 export { formatRelationshipResults } from './relationship.js';
+export { formatSearchResults } from './search.js';
+export { formatBehaviourSummary } from './behaviour.js';
+export { formatCollectionResults } from './collection.js';
